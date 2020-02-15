@@ -1,45 +1,5 @@
-.squire
-{
- width:60px;
- height:60px;
- float:left;
- font-size: 60px;
-}
 
-div.blackcircle {
-    border: 3px solid black;
-    border-radius: 50%;
-	background-color: black;
-    width: 60px; 
-    height: 60px;
-    box-sizing: border-box;
-    -moz-box-sizing: border-box;    
- }
 
- div.whitecircle {
-    border: 3px solid black;
-    border-radius: 50%;
-	background-color: #ffffff;
-    width: 60px; 
-    height: 60px;
-    box-sizing: border-box;
-    -moz-box-sizing: border-box;    
- }
- 
-.bigdiv {	
-  text-align: center;	
-  font-family: "Roboto", monospace;	
-  margin-right:auto;	
-  margin-left: auto;	
-  width: 396px;
-}
-
-#mainChessBoard
-{
-    width:480px;
-    height:480px;
-    border:1px solid black;
-}
 
 
 h1 {
