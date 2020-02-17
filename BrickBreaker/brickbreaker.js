@@ -39,6 +39,7 @@ var dx;
 dx = 1;
 var dy;
 dy = -1;
+var direction = 1;
 
 var ballSize=30/complexity;
 var paddleH=10;
@@ -56,24 +57,41 @@ var brickOffSetLeft=30;
 var score=0;
 var lives=3;
 var speed=0;
-var speed_increment=1.3;
-var colors = ["#0095DD", "#0095DD", "#8BFF06", "#EDFD08", "#08FDED", "#FD08D4", "#FDBC08"];
-
+var speed_increment=1.2;
+var speed_decrement=1.2;
+var colors = ["#C1CAE8", "#FDBC08", "#8BFF06", "#EDFD08", "#08FDED", "#FD08D4"];
+var scores = [1,2,3,4,5,6];
+var special = ["+ Speed", "- Speed", "+ Life ", "- Life "]
+var totalPossibleScore = 0;
+var minusLifeCount = 0;
 var bricks=[];
 for(let c=0;c<brickColCnt;c++)
 {
 	bricks[c]=[];
 	for(let r=0;r<brickRCnt;r++)
 	{
-		bricks[c][r]={x:0,y:0,status:1,color:colors[getRandomInt(6) + 1], special:""};
+		var temp_score = scores[getRandomInt(6)];
+		totalPossibleScore += temp_score;
+		bricks[c][r]={x:0,y:0,status:1,color:colors[temp_score - 1], special1:"", special2:temp_score};
 	}
 }
-for(let i = 1; i < 5; i++){
+
+for(let i = 0; i < 6; i++){
 	do{
 		var chosenbrick = bricks[getRandomInt(brickColCnt)][getRandomInt(brickRCnt)];
-	}while(chosenbrick.special != 0);
-	chosenbrick.special = i + "";
+	}while(chosenbrick.special1 != "");
+	chosenbrick.special1 = special[getRandomInt(4)];
+	if(chosenbrick.special1 == special[3] && minusLifeCount < 2){
+		minusLifeCount++;
+	}
+	else{
+		chosenbrick.special1 = special[getRandomInt(3)];
+	}
+	chosenbrick.color = "#FF0000" 
+	totalPossibleScore -= chosenbrick.special2;
+	chosenbrick.special2 = 0;
 }
+
 document.addEventListener("keydown",keyDownHandler);
 document.addEventListener("keyup",keyUpHandler);
 
@@ -91,6 +109,13 @@ function mouseMoveHandler(e)
 		paddleX= relativeX-paddleW/2;
 	}
 }
+
+function fnSpeed(s)
+{
+	if (s == "I") { dy = dy*(((speed_increment-1) / 3)+1); dx = dx*(((speed_increment-1) / 3)+1); }
+	else { dy = dy/speed_decrement; dx = dx/speed_decrement; }
+}
+
 function drawBricks()
 {
 	for(let c=0;c<brickColCnt;c++)
@@ -111,13 +136,18 @@ function drawBricks()
 			ctx.fill();
 			ctx.stroke();
 			ctx.fillStyle = "#000000";
-			ctx.fillText(bricks[c][r].special,brickX + brickW/2, brickY + brickH/2);
+			ctx.font="15px Arial";
+			if (bricks[c][r].special1 != "")
+				ctx.fillText(bricks[c][r].special1,brickX + brickW/2, brickY + brickH/2);
+			else
+				ctx.fillText(bricks[c][r].special2,brickX + brickW/2, brickY + brickH/2);
 			ctx.closePath();
 			}
 
 		}
 	}
 }
+
 function keyDownHandler(e){
 	if(e.keyCode==39)
 	{
@@ -159,6 +189,7 @@ function drawPaddle()
 	ctx.fill();
 	ctx.closePath();
 }
+
 function collisonDetection()
 {
 	for(var c=0;c<brickColCnt;c++)
@@ -173,8 +204,17 @@ function collisonDetection()
 					PlaySoundWav("brick1");	//hitting a brick
 					dy=-dy;
 					b.status=0;
-					++score;
-					if(brickColCnt*brickRCnt==score)
+					var chosenbrick = bricks[c][r];
+					if (chosenbrick.special1 == "+ Life ") { lives++; fnSpeed("D"); }
+					
+					if (chosenbrick.special1 == "- Life ") { lives--; fnSpeed("I"); }
+
+					if (chosenbrick.special1 == "+ Speed") { fnSpeed("I"); }
+					
+					if (chosenbrick.special1 == "- Speed") { fnSpeed("D") }
+										
+					score+=chosenbrick.special2;
+					if(totalPossibleScore==score)
 					{
 						PlaySoundWav("win1");	//winning
 						window.setTimeout(function(){alert("YOU WIN!"); document.location.reload();},300);
@@ -186,12 +226,18 @@ function collisonDetection()
 	}
 }
 
+function drawSpeed()
+{
+	ctx.font="16px Arial";
+	ctx.fillStyle="#0095DD";
+	ctx.fillText("Speed:"+speed,100,20);
+}
+
 function drawScore()
 {
 	ctx.font="16px Arial";
 	ctx.fillStyle="#0095DD";
-	ctx.fillText("Score:"+score,8,20);
-	ctx.fillText("Speed:"+speed,100,20);
+	ctx.fillText("Score:"+score+"/"+totalPossibleScore,8,20);
 }
 
 function drawLives()
@@ -202,7 +248,6 @@ function drawLives()
 		lives = 0;
 	}
 	ctx.fillText("Lives:"+lives,canvas.width-65,20);
-	ctx.fillText("Speed:"+speed,100,20);
 }
 
 function draw()
@@ -213,6 +258,7 @@ function draw()
 	drawBall();
 	drawPaddle();
 	drawScore();
+	drawSpeed();
 	collisonDetection();
 
 	if(y+dy < ballSize){
@@ -223,22 +269,26 @@ function draw()
 
 		if(x>paddleX && x<paddleX +paddleW)
 		{
+			dy = -dy;
+			dx = dx/direction;
+			dx = Math.abs(dx);
 			PlaySoundWav("paddle1");	//hitting paddle
-			dy=-dy;
+			var distance = (x - paddleX)/paddleW;
+			direction = (distance - 0.5) * (speed_increment / 0.5);
+			dx = dx * direction;
 		}
 		else{
 			PlaySoundWav("lifeLess1");	//losing life
 			lives=lives-1;
 			if(!lives)    
 			{
-			PlaySoundMp3("lose1");	//game over
-			window.setTimeout(function(){alert("GAME OVER!"); document.location.reload();},300);
-
+				PlaySoundMp3("lose1");	//game over
+				window.setTimeout(function(){alert("GAME OVER!"); document.location.reload();},300);
 			}
 			else
 			{
-				dy=dy*-speed_increment;
-				dx=dx*speed_increment;
+				dy=dy*-speed_increment*0.9;
+				dx=dx*speed_increment*0.9;
 			}
 	    }
 	}
@@ -257,8 +307,9 @@ function draw()
 	x += complexity*dx/2;
 	y += complexity*dy/2;
 
-	var temp_speed = speed;
-	temp_speed = Math.ceil(complexity*10*speed_increment**(3-lives));
+	var temp_y_speed = Math.ceil(Math.abs(complexity*10*dy));
+	var temp_x_speed = Math.ceil(Math.abs(complexity*10*dx));
+	var temp_speed = Math.ceil(Math.sqrt(temp_y_speed**2 + temp_x_speed**2)/Math.sqrt(2));
 	if (speed != temp_speed) { 
 		if ((!start_flag) && (lives > 0)) {
 			PlaySoundWav("speed1");	//speed increase
@@ -280,12 +331,15 @@ document.getElementById("start").textContent = "Reset";
 for(let i = 0; i < buttons.length; i++){
 	if(buttons[i].checked == true){
 		complexity = buttons[i].value;
+		speed_increment = speed_increment + (0.01 * complexity);
+		speed_decrement = speed_decrement - (0.01 * complexity);
 	}
 	buttons[i].disabled = true;
 }
+
 ballSize=30/complexity;
-paddleW=210/complexity;
-console.log(complexity);
+paddleW=250/complexity;
+//console.log(complexity);
 setInterval(draw,10);
 
 }
