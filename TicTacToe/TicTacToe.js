@@ -169,6 +169,9 @@ function computerTurn(){
 		  ocount++;
 	  }
   }
+  if(xcount == 2 && board[7] == "X" && board[5] == "X"){
+	  return 8;
+  }
   if(xcount == 1 && position % 2 == 1){
 	  return 4;
   }
@@ -187,6 +190,7 @@ function computerTurn(){
   if(xcount == 1 && position == 4){
 	  return 8;
   }
+  
 
   if(xcount == 2 && board[0] == "O" && board[4] == "O" && position == 8){
 	  if(board[3] == "X"){
