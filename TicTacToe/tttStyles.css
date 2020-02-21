@@ -1,0 +1,104 @@
+body {
+  text-align: center;
+  font-family: "Roboto", monospace;
+  margin-right:auto;
+  margin-left: auto;
+  width: 396px;
+}
+
+
+h1 {
+  margin: 0 auto;
+  font-family: "Major Mono Display", monospace;
+  font-size: 30px;
+  color: blue;
+}
+
+
+h2 {
+  margin: 0 auto;
+  font-size: 15px;
+  font-weight: lighter;
+  color: red;
+}
+
+h3 {
+  margin: 0 auto;
+  font-weight: lighter;
+  font-size: 20px;
+  text-decoration: underline;
+}
+
+h4 {
+  margin: 0 auto;
+  font-weight: bolder;
+  font-size: 20px;
+}
+
+.score {
+  display:inline-block;
+  width: 30%;
+  text-align: center;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.column {
+  height: 100%;
+  width: 100%;
+  flex-direction: column;
+}
+
+.wrap {
+  flex-wrap: wrap;
+  height: 396px;
+  width: 396px;
+}
+
+.square {
+  border: 1px solid rgba(0, 0, 0, 0.75);
+  font-size: 130px;
+  height: 130px;
+  width: 130px;
+  line-height: 130px;
+  line-width: 130px;
+  user-select: none;
+}
+
+
+.square:hover {
+  background-color: lightgray;
+  cursor: pointer;
+}
+
+#reset-button, #player-toggle, #start-turn {
+  background-color: white;
+  border: 1px solid black;
+  color: black;
+  font-size: 21px;
+  line-height: 30px;
+  margin-top: 1%;
+  margin-bottom: 1%;
+  margin-left:auto;
+  margin-right:auto;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  width: 396px;
+  display:inline-block;
+}
+
+
+#reset-button:hover, #player-toggle:hover, #start-turn:hover {
+  background-color: black;
+  color: white;
+  cursor: pointer;
+}
+
+#buttons{
+
+}
