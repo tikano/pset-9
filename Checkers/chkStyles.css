@@ -16,6 +16,11 @@ ul {
 
 li {
   float: left;
+  border-right: 1px solid #bbb;
+}
+
+li:last-child {
+  border-right: none;
 }
 
 li a {
@@ -35,3 +40,30 @@ li a:hover {
 .active {
   background-color: #4CAF50;
 }
+
+
+.checkersB { 
+        width: 480px; 
+        height: 480px; 
+        margin: 1px; 
+        border: 2px solid #F44336; 
+    } 
+ 
+    .red, .yellow { 
+        float: left; 
+        width: 60px; 
+        height: 60px; 
+        font-size:40px; 
+        text-align:center; 
+        display: table-cell; 
+        vertical-align:middle; 
+        box-sizing: border-box; 
+    } 
+ 
+    .red { 
+        background-color: #F44336; 
+    } 
+ 
+    .yellow { 
+        background-color: #FFEB3B; 
+    }
