@@ -43,16 +43,16 @@ li a:hover {
 
 
 .checkersB { 
-        width: 480px; 
-        height: 480px; 
+        width: 400px; 
+        height: 400px; 
         margin: 1px; 
-        border: 2px solid #F44336; 
+        border: 3px solid #F44336; 
     } 
  
     .red, .yellow { 
         float: left; 
-        width: 60px; 
-        height: 60px; 
+        width: 50px; 
+        height: 50px; 
         font-size:40px; 
         text-align:center; 
         display: table-cell; 
@@ -67,3 +67,13 @@ li a:hover {
     .yellow { 
         background-color: #FFEB3B; 
     }
+
+.disable-select {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Opera and Firefox */
+}
