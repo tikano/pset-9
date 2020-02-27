@@ -40,6 +40,11 @@ function init() {
   render();
 }
 
+function PlaySoundMp3(soundObj) {
+  var audio = new Audio(soundObj + '.mp3');
+  audio.play();
+}
+
 function toggleTurn(){
   startturn = startturn === "X" ? "O" : "X";
   document.getElementById("start-turn").textContent = startturn + " starts";
@@ -61,6 +66,9 @@ function toggleMode(){
 function render() {
   board.forEach(function(mark, index) {
     squares[index].textContent = mark;
+    if (mark == "X") { squares[index].setAttribute("class", "redsquare"); }
+    else if (mark == "O") { squares[index].setAttribute("class", "greensquare"); }
+    else squares[index].setAttribute("class", "square");
   });
 
   message.textContent =
@@ -169,9 +177,6 @@ function computerTurn(){
 		  ocount++;
 	  }
   }
-  if(xcount == 2 && board[7] == "X" && board[5] == "X"){
-	  return 8;
-  }
   if(xcount == 1 && position % 2 == 1){
 	  return 4;
   }
@@ -190,7 +195,6 @@ function computerTurn(){
   if(xcount == 1 && position == 4){
 	  return 8;
   }
-  
 
   if(xcount == 2 && board[0] == "O" && board[4] == "O" && position == 8){
 	  if(board[3] == "X"){

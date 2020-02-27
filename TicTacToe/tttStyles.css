@@ -1,3 +1,9 @@
+*{
+	padding: 0;
+	margin: 0;
+	
+}
+
 body {
   text-align: center;
   font-family: "Roboto", monospace;
@@ -67,10 +73,42 @@ h4 {
   line-height: 130px;
   line-width: 130px;
   user-select: none;
+  background-color: #FFEB3B; 
 }
 
-
 .square:hover {
+  background-color: lightgray;
+  cursor: pointer;
+}
+
+.redsquare {
+  border: 1px solid rgba(0, 0, 0, 0.75);
+  font-size: 130px;
+  height: 130px;
+  width: 130px;
+  line-height: 130px;
+  line-width: 130px;
+  user-select: none;
+  background-color: #F44336; 
+}
+
+.redsquare:hover {
+  background-color: lightgray;
+  cursor: pointer;
+}
+
+.greensquare {
+  border: 1px solid rgba(0, 0, 0, 0.75);
+  font-size: 130px;
+  height: 130px;
+  width: 130px;
+  line-height: 130px;
+  line-width: 130px;
+  user-select: none;
+  background-color: #8BFF06; 
+}
+
+.greensquare:hover {
   background-color: lightgray;
   cursor: pointer;
 }
@@ -103,6 +141,19 @@ h4 {
 
 }
 
+.disable-select {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Opera and Firefox */
+}
+
+
+
+
 
 ul {
   list-style-type: none;
@@ -114,6 +165,11 @@ ul {
 
 li {
   float: left;
+  border-right: 1px solid #bbb;
+}
+
+li:last-child {
+  border-right: none;
 }
 
 li a {
