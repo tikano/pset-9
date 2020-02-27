@@ -5,7 +5,6 @@
 
 
 /* Pawn object */
-
 function Pawn(player, type) {
     this.player = player;
     this.maxStep = 1;
@@ -306,7 +305,7 @@ Checkers.prototype.getBoard = function() {
 
 Checkers.prototype.checkSetCanPlayerSkipMove = function() {
 	this.canPlayerSkipMove = 1;
-	//logic
+	//logic to check if second move is possible at all or the pawn has no place to go
 	return true;
 };
 
@@ -406,10 +405,11 @@ Checkers.prototype.promotePawnToKing_IfApplicable = function(currBox) {
     var pawn = this.getPawnByBox(currBox);
 
 	if(pawn.getType() !== 'king') {
-    	this.setwasLastMove_PromotedPawn(0);
+    		this.setwasLastMove_PromotedPawn(0);
 
 	    var rowForPromotion = 0;
-	    if(this.firstTurnPlayer === pawn.getPlayer()) {
+	    //if(this.firstTurnPlayer === pawn.getPlayer()) {
+	    if(pawn.getPlayer() == this.plyr1) {
         	rowForPromotion = this.boardSize -1;
     	    }
 
@@ -495,6 +495,11 @@ Checkers.prototype.isGameStalemate = function() {
 
 function PlaySoundWav(soundObj) {
   var audio = new Audio(soundObj + '.wav');
+  audio.play();
+}
+
+function PlaySoundMP3(soundObj) {
+  var audio = new Audio(soundObj + '.mp3');
   audio.play();
 }
 
@@ -670,7 +675,13 @@ Checkers.prototype.move = function(currBox, destBox) {
 
 /* User Experience */
 
-const message = document.querySelector("h2");
+const txtmsg = document.getElementById("msg");
+const txtplayer1Pawns = document.getElementById("player1Pawns");
+const txtplayer2Pawns = document.getElementById("player2Pawns");
+const txtplayer1Score = document.getElementById("player1Score");
+const txtplayer2Score = document.getElementById("player2Score");
+const txtTieScore = document.getElementById("tieScore");
+
 let myBoard = document.getElementsByClassName("checkersB")[0]; 
 let pieceUcode_pawn = '\u26C0'; 
 let blackpieceUcode_pawn = '\u26C2'; 
@@ -688,12 +699,12 @@ var PawnAutoSelected = false;	//to manage additional move by the same pawn after
 
 var playerNoToStart = 1;
 var flgPowerfulKing = false;
+var player1Score = 0;
+var player2Score = 0;
+var tieScore = 0;
 
 var plyr1;
 var plyr2;
-
-plyr1 = new Player('first');
-plyr2 = new Player('second');
 
 var checkers;
 
@@ -704,22 +715,29 @@ document.getElementById("btnWhoStarts").onclick = toggleTurn;
 document.getElementById("btnHowManyPlayers").onclick = toggleMode;
 document.getElementById("btnKingPower").onclick = kingPower;
 
-
 function init() {
 
 	checkers = null;
 
+	plyr1 = new Player('Player1');
+	plyr2 = new Player('Player2');
+
+	txtplayer1Pawns.textContent = "12";
+	txtplayer2Pawns.textContent = "12";
+	
 	checkers = new Checkers(plyr1, plyr2);
+
 	if (playerNoToStart == 2) {
 		checkers.initialize(plyr2);
-		message.textContent = "Message: Turn of second";
+		txtmsg.innerText = "Turn of " + plyr2.getName();
 	}
 	else {
 		checkers.initialize(plyr1);
-		message.textContent = "Message: Turn of first";
+		txtmsg.innerText = "Turn of " + plyr1.getName()
 	}
 
 	checkers.setisPowerfulKing(flgPowerfulKing);
+	skipMoveButton.style.display = "none";
 
 	reDrawCheckers()
 
@@ -730,10 +748,10 @@ Array.from(myBoard.children).forEach(function(cell) {
 
   cell.onclick = function(elem) { 
 
+if ( ! ( ( checkers.isGameWon() ) || ( checkers.isGameStalemate() ) ) ) {
+
     if (!PawnAutoSelected)
     	resetCheckersColor();
-
-    //message.textContent = "Message: ";
 
     var element;
     if (elem.target) { 
@@ -756,57 +774,103 @@ Array.from(myBoard.children).forEach(function(cell) {
 	toR = getCellRC(cell, "Row");
 	toC = getCellRC(cell, "Column");
 
-	message.textContent = "Message: ";
-    
+	txtmsg.innerText = "";    
+
 	var moveRes = checkers.move(new Box(fromR, fromC), new Box(toR, toC));
 
 	if (!moveRes) {
-		message.textContent+= checkers.getlastOperationMsg() + "; ";
+		txtmsg.innerText+= checkers.getlastOperationMsg() + "; ";
 		PlaySoundWav("error");
 	}
 
-	message.textContent+= checkers.getlastUserMsg();
+	txtmsg.innerText+= checkers.getlastUserMsg();
 
 		if (from && moveRes) { 
-			from = null; 
-			reDrawCheckers();
-			clickDestCellFlag = true;
-			PawnAutoSelected = false;
 
-			if (checkers.getcanPlayerSkipMove() == 1)
-				skipMoveButton.style.display = "block";
-			else
-				skipMoveButton.style.display = "none";
-    		} 
+			if ( checkers.isGameWon() || checkers.isGameStalemate() ) {
+				reDrawCheckers();
+				if (checkers.isGameWon()){
+					txtplayer1Score.textContent = player1Score;
+					txtplayer2Score.textContent = player2Score;
+
+					if (plyr1.getPawnCnt() == 0) {
+						player2Score+= 1;
+
+						txtmsg.innerText = "Game won by " + plyr2.getName();
+						PlaySoundWAV("win1");
+						alert("Game won by "  + plyr2.getName());			
+					}
+					if (plyr2.getPawnCnt() == 0) {
+						player1Score+= 1;
+
+						txtmsg.innerText = "Game won by " + plyr1.getName();
+						PlaySoundMP3("lose1");
+						alert("Game won by "  + plyr1.getName());			
+					}				
+				}
+				else if ( checkers.isGameStalemate() ) {
+					tieScore+= 1;
+
+					txtTieScore.textContent = tieScore;
+
+					txtmsg.innerText = "Game Tie!";
+
+					alert("Game Tie!");
+				}
+			}
+			else {
+				from = null; 
+				reDrawCheckers();
+				clickDestCellFlag = true;
+				PawnAutoSelected = false;
+
+				if (checkers.getcanPlayerSkipMove() == 1)
+					skipMoveButton.style.display = "inline";
+				else
+					skipMoveButton.style.display = "none";
+    			}
+		} 
 	}
 
-	if ( (checkers.getcanPlayerSkipMove() == 1) && clickDestCellFlag )
-	{
-		if (checkers.getlastMovedDestBox())
+	if ( ! ( ( checkers.isGameWon() ) || ( checkers.isGameStalemate() ) ) ) {
+		if ( (checkers.getcanPlayerSkipMove() == 1) && clickDestCellFlag )
 		{
-			fromR = checkers.getlastMovedDestBox().r;
-			fromC = checkers.getlastMovedDestBox().c;
-			clickDestCellFlag = false;
-			clickCell(fromR, fromC);
-			PawnAutoSelected = true;
+			if (checkers.getlastMovedDestBox())
+			{
+				fromR = checkers.getlastMovedDestBox().r;
+				fromC = checkers.getlastMovedDestBox().c;
+				clickDestCellFlag = false;
+				clickCell(fromR, fromC);
+				PawnAutoSelected = true;
+			}
 		}
 	}
 
+	txtplayer1Pawns.textContent = plyr1.getPawnCnt();
+	txtplayer2Pawns.textContent = plyr2.getPawnCnt();
+}
+else
+{
+	alert(1);
+}
   } 
 }); 
 
 }
 
 function kingPower() {
+
+	if (window.confirm("This will reset the existing game")) {
 	if ( (document.getElementById("btnKingPower").innerHTML) == "Normal King" ) {
-		document.getElementById("btnKingPower").innerHTML = "Powerful King";
+		document.getElementById("btnKingPower").innerHTML = "Super King";
 		flgPowerfulKing = true;
 	}
 	else if ( (document.getElementById("btnKingPower").innerHTML) == "Powerful King" ) {
-		document.getElementById("btnKingPower").innerHTML = "Normal King";
+		document.getElementById("btnKingPower").innerHTML = "Super King";
 		flgPowerfulKing = false;
 	}
 	init();
+	}
 }
 
 function toggleMode() {
@@ -816,29 +880,31 @@ function toggleMode() {
 }
 
 function toggleTurn() {
-	if ( (document.getElementById("btnWhoStarts").innerHTML) == "Player 1 Starts" ) {
-		document.getElementById("btnWhoStarts").innerHTML = "Player 2 Starts";
+	if (window.confirm("This will reset the existing game")) {
+	if ( (document.getElementById("btnWhoStarts").innerHTML) == "Player1 Starts" ) {
+		document.getElementById("btnWhoStarts").innerHTML = "Player2 Starts";
 		playerNoToStart = 2;
 	}
-	else if ( (document.getElementById("btnWhoStarts").innerHTML) == "Player 2 Starts" ) {
-		document.getElementById("btnWhoStarts").innerHTML = "Player 1 Starts";
+	else if ( (document.getElementById("btnWhoStarts").innerHTML) == "Player2 Starts" ) {
+		document.getElementById("btnWhoStarts").innerHTML = "Player1 Starts";
 		playerNoToStart = 1;
 	}
 	init();
+	}
 }
 
 skipMoveButton.onclick = function(){
 	checkers.skipMove();
 
 	if (checkers.getcanPlayerSkipMove() == 1)
-		skipMoveButton.style.display = "block";
+		skipMoveButton.style.display = "inline";
 	else
 		skipMoveButton.style.display = "none";
 
-	message.textContent = "Message: ";
-	message.textContent+= checkers.getlastOperationMsg() + "; ";
-	message.textContent+= checkers.getlastUserMsg();
- 
+	txtmsg.innerText = "";
+	txtmsg.innerText+= checkers.getlastOperationMsg() + "; ";
+	txtmsg.innerText+= checkers.getlastUserMsg();
+
 	PawnAutoSelected = false;
 	resetCheckersColor();
 }
@@ -895,13 +961,13 @@ function reDrawCheckers() {
 		if (brd[row]) {
 			var p = brd[row][column];
 			if (p) {
-				if (p.getPlayer().getName() == "first") {
+				if (p.getPlayer().getName() == plyr1.getName()) {
 					if (p.getType() == "king")
 						c.innerHTML = pieceUcode_king;
 					else
 						c.innerHTML = pieceUcode_pawn;
 				}
-				else if (p.getPlayer().getName() == "second") {
+				else if (p.getPlayer().getName() == plyr2.getName()) {
 					if (p.getType() == "king")
 						c.innerHTML = blackpieceUcode_king;
 					else
@@ -922,7 +988,6 @@ function resetCheckersColor() {
 
 		if ((row % 2) == 0) {
 			if ((i % 2) == 0) {
-				//c.style.backgroundColor = "#FFEB3B";
 				c.setAttribute("class", "yellow");
 			}
 			else
@@ -930,7 +995,6 @@ function resetCheckersColor() {
 		}
 		else if ((row % 2) == 1) {
 			if ((i % 2) == 1) {
-				//c.style.backgroundColor = "#FFEB3B";
 				c.setAttribute("class", "yellow");
 			}
 			else

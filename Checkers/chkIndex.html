@@ -3,7 +3,7 @@
 <html lang="en">
   <head>
 	<meta charset="UTF-8">
-	<title>Checkers</title>
+	<title>Om Desai's Games Suite - Checkers</title>
         <link href="chkStyles.css" rel="stylesheet" type="text/css" />
         <script defer src="Checkers.js"></script>
   </head>
@@ -12,16 +12,16 @@
 <div id="div1" align=center>
 		<ul>
   			<li><a href="../index.html">Home</a></li>
-  			<li><a href="../TicTacToe/tttIndex.html">Tic-Tac-Toe</a></li>
   			<li><a href="../BrickBreaker/bbIndex.html">Brick Breaker</a></li>
   			<li><a class="active" href="chkIndex.html">Checkers</a></li>
+  			<li><a href="../TicTacToe/tttIndex.html">Tic-Tac-Toe</a></li>
   			<li><a href="../faq.html">??</a></li>
 		</ul>
 
 <h1>Checkers</h1>
 
-<h2>Message: </h2> 
-<button id="skipMove" style="display:none;">Skip turn?</button>
+<label id="msg" class="label1">Message:</label>
+<button id="skipMove" style="display:none;" class="button2">click to skip</button>
 
 	<div class="checkersB" class="disable-select" style="cursor: pointer;"> 
             <!-- 0th row --> 
@@ -106,19 +106,19 @@
         </div>
 
       <div id = "buttons">
-		<button id="btnPlayAgain">Play Again!</button>
-		</br>
-		<button id="btnHowManyPlayers">Two Players</button>
-		</br>
-		<button id="btnWhoStarts">Player 1 Starts</button>
-		</br>
-		<button id="btnKingPower">Normal King</button>
+		<button id="btnPlayAgain" class="button1">Play Again!</button>
+		<br/>
+		<button id="btnHowManyPlayers" class="button1">Two Players</button>
+		<button id="btnWhoStarts" class="button1">Player1 Starts</button>
+		<br/>
+		<button id="btnKingPower" class="button1">Normal King</button>
       </div>
 
 </div>
 
     <div class = "scores">
       <div class ="score">
+	<h2 id="player1Pawns"> 12 </h2>
         <h3>Player1</h3>
         <h4 id="player1Score"> 0 </h4>
       </div>
@@ -127,11 +127,16 @@
         <h4 id="tieScore"> 0 </h4>
       </div>
       <div class ="score">
+	<h2 id="player2Pawns"> 12 </h2>
         <h3>Player2</h3>
         <h4 id="player2Score"> 0 </h4>
       </div>
     </div>
 
+<div class="footer">
+<br/>
 	Checkers by: Om Desai
+</div>
+
 </body>
 </html>
