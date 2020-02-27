@@ -114,6 +114,10 @@ function Checkers(vPlyr1, vPlyr2, vTimePerMoveSec = 0, vIsAIPlay = 0) {
     this.currentNoOfPawns_Player1 = 12;
     this.currentNoOfPawns_Player2 = 12;
 
+    this.lastMovedPawn = null;
+    this.lastMovedDestBox = null;
+
+    this.totalStalemateMoves = 0;
     this.totalMoves_Player1 = 0;
     this.totalMoves_Player2 = 0;
     this.totalTimeUsed_Player1 = 0;
@@ -123,7 +127,9 @@ function Checkers(vPlyr1, vPlyr2, vTimePerMoveSec = 0, vIsAIPlay = 0) {
     	this.isTimedGame = 1;
     	this.timePerMoveSec = vTimePerMoveSec;
     }
-   this.isAIPlay = vIsAIPlay;
+
+    this.isAIPlay = vIsAIPlay;
+    this.isPowerfulKing = false;
 }
 
 Checkers.prototype.resetLastMessages = function() {
@@ -135,16 +141,27 @@ Checkers.prototype.resetLastStatuses = function() {
     this.setwasLastMove_TogglePlayer(0);
     this.setwasLastMove_PromotedPawn(0);
     this.setwasLastMove_EatPawn(0);
+    this.setlastMovedPawn(null);
+    this.setlastMovedDestBox(null);
     this.setcanPlayerSkipMove(0);
 };
 
 Checkers.prototype.resetCounters = function() {
     this.setcurrentNoOfPawns_Player1(0);
     this.setcurrentNoOfPawns_Player2(0);
+    this.settotalStalemateMoves(0);
     this.settotalMoves_Player1(0);
     this.settotalMoves_Player2(0);
     this.settotalTimeUsed_Player1(0);
     this.settotalTimeUsed_Player2(0);
+};
+
+Checkers.prototype.setisPowerfulKing = function(val) {
+    this.isPowerfulKing = val;
+};
+
+Checkers.prototype.getisPowerfulKing = function() {
+    return this.isPowerfulKing;
 };
 
 Checkers.prototype.getisTimedGame = function() {
@@ -157,6 +174,22 @@ Checkers.prototype.getisAIPlay = function() {
 
 Checkers.prototype.gettimePerMoveSec = function() {
     return this.timePerMoveSec;
+};
+
+Checkers.prototype.getlastMovedDestBox = function() {
+    return this.lastMovedDestBox;
+};
+
+Checkers.prototype.setlastMovedDestBox = function(obj) {
+    this.lastMovedDestBox = obj;
+};
+
+Checkers.prototype.getlastMovedPawn = function() {
+    return this.lastMovedPawn;
+};
+
+Checkers.prototype.setlastMovedPawn = function(obj) {
+    this.lastMovedPawn = obj;
 };
 
 Checkers.prototype.gettotalTimeUsed_Player1 = function() {
@@ -173,6 +206,14 @@ Checkers.prototype.gettotalTimeUsed_Player2 = function() {
 
 Checkers.prototype.settotalTimeUsed_Player2 = function(val) {
     this.totalTimeUsed_Player2 = val;
+};
+
+Checkers.prototype.gettotalStalemateMoves = function() {
+    return this.totalStalemateMoves;
+};
+
+Checkers.prototype.settotalStalemateMoves = function(val) {
+    this.totaltotalStalemateMoves = val;
 };
 
 Checkers.prototype.gettotalMoves_Player1 = function() {
@@ -273,6 +314,8 @@ Checkers.prototype.skipMove = function(pawn, Box) {
 	if (this.canPlayerSkipMove == 1) {
 		this.togglePlayer();
 		this.setcanPlayerSkipMove(0);
+
+		this.setlastUserMsg("Turn of " + this.getCurrentPlayer().getName());
 		this.setlastOperationMsg("Turn skipped");
 		return true;
 	}
@@ -359,23 +402,30 @@ Checkers.prototype.getNonEmptyBoxesOnTrack = function(startBox, destBox) {
 };
 
 Checkers.prototype.promotePawnToKing_IfApplicable = function(currBox) {
-    this.setwasLastMove_PromotedPawn(0);
-
+ 
     var pawn = this.getPawnByBox(currBox);
 
-    var rowForPromotion = 0;
-    if(this.firstTurnPlayer === pawn.getPlayer()) {
-        rowForPromotion = this.boardSize -1;
-    }
+	if(pawn.getType() !== 'king') {
+    	this.setwasLastMove_PromotedPawn(0);
 
-    if(rowForPromotion !== currBox.getR()) {
-        return false;
-    }
+	    var rowForPromotion = 0;
+	    if(this.firstTurnPlayer === pawn.getPlayer()) {
+        	rowForPromotion = this.boardSize -1;
+    	    }
 
-    pawn.setMaxStep(this.boardSize);
-    pawn.setType('king');
-    this.setwasLastMove_PromotedPawn(1);
-    return true;
+	    if(rowForPromotion !== currBox.getR()) {
+        	return false;
+	    }
+   
+		if (this.isPowerfulKing)
+			pawn.setMaxStep(this.boardSize);
+   	 	pawn.setType('king');
+	   	this.setwasLastMove_PromotedPawn(1);
+    		PlaySoundWav("king");
+    		return true;
+	}
+
+	return false;
 }
 
 Checkers.prototype.initialize = function(firstTurnPlayer) {
@@ -392,7 +442,7 @@ Checkers.prototype.initialize = function(firstTurnPlayer) {
         this.currentPlayerTurn = firstTurnPlayer;
     } else {
             this.currentPlayerTurn = this.plyr1;
-        }
+    }
     this.firstTurnPlayer = this.currentPlayerTurn;
     
     this.initializeAllPawns(this.plyr1);
@@ -438,10 +488,20 @@ Checkers.prototype.isGameWon = function() {
         this.plyr2.getPawnCnt() == 0;
 }
 
+Checkers.prototype.isGameStalemate = function() {
+    return this.plyr1.getPawnCnt() == 1 &&
+        this.plyr2.getPawnCnt() == 1 && this.totalStalemateMoves >= 20;
+}
+
+function PlaySoundWav(soundObj) {
+  var audio = new Audio(soundObj + '.wav');
+  audio.play();
+}
+
 Checkers.prototype.isValidMove
     = function(currBox, destBox) {
 
-    if(currBox.getC() == destBox.getC() ||
+    if(currBox.getC() == destBox.getC() &&
         currBox.getR() == destBox.getR()) {
 	this.setlastOperationMsg("Not moving");
         return false;
@@ -449,12 +509,12 @@ Checkers.prototype.isValidMove
 
     var pawn = this.getPawnByBox(currBox);
     if(!pawn) {
-	this.setlastOperationMsg("No pawn at current location");
+	this.setlastOperationMsg("No piece");
         return false;
     }
 
     if(pawn.getPlayer() !== this.getCurrentPlayer()) {
-       this.setlastOperationMsg("Pawn is not of current player"); 
+       this.setlastOperationMsg("Not your piece"); 
        return false;
     }
 
@@ -462,39 +522,52 @@ Checkers.prototype.isValidMove
         destBox.getC() < 0 ||
         destBox.getR() > this.boardSize -1 ||
         destBox.getC() > this.boardSize -1) {
-        this.setlastOperationMsg("Destination is outside board boundary"); 
+        this.setlastOperationMsg("Outside board"); 
         return false;
     }
 
     if(!this.isBoxEmpty(destBox)) {
-        this.setlastOperationMsg("Destination is not empty"); 
+        this.setlastOperationMsg("Box not available"); 
         return false;
     }
 
     if(pawn.getType() !== 'king') {
-        if(pawn.getPlayer() == this.firstTurnPlayer) {
+        if(pawn.getPlayer() == this.plyr1) {
             if(currBox.getR() > destBox.getR()) {
-        	this.setlastOperationMsg("Pawn is trying to move backward"); 
+        	this.setlastOperationMsg("Can't move back"); 
                 return false;
             }
         } else if(currBox.getR() < destBox.getR()) {
-            this.setlastOperationMsg("Pawn is trying to move backward"); 
+            this.setlastOperationMsg("Can't move back"); 
             return false;
         }
     }
+
+
+    var horizSteps = Math.abs(
+        destBox.getR() - currBox.getR()
+    );
+    var vertSteps = Math.abs(
+        destBox.getC() - currBox.getC()
+    );
+    if(horizSteps !== vertSteps) {
+        this.setlastOperationMsg("Wrong move"); 
+        return false;
+    }
+
 
     var BoxesWithPawns
         = this.getNonEmptyBoxesOnTrack(
             currBox, destBox
     );
     if (BoxesWithPawns.length > 2) {
-        this.setlastOperationMsg("Pawn is trying to move more than two steps"); 
+        this.setlastOperationMsg("Can't move that far"); 
         return false;
     }
 
     var maxStepsAllowed = pawn.getMaxStep();
     if (BoxesWithPawns.length === 2) {
-         //'Eating' - allow pawn 1 more step
+         //For 'eating' - allow 1 more step
          maxStepsAllowed = Math.min(
             this.boardSize, maxStepsAllowed+1
         );
@@ -512,26 +585,24 @@ Checkers.prototype.isValidMove
         }
 
         if(temp_pwn.getPlayer() === pawn.getPlayer()) {
-            this.setlastOperationMsg("Pawn is trying to eat it's own pawn"); 
+            this.setlastOperationMsg("Can't eat own piece"); 
             return false;
         }
     }
 
-    var horizSteps = Math.abs(
-        destBox.getR() - currBox.getR()
-    );
-    var vertSteps = Math.abs(
-        destBox.getC() - currBox.getC()
-    );
-    if(horizSteps !== vertSteps) {
-        this.setlastOperationMsg("Pawn is trying to move not diagonal"); 
-        return false;
-    }
 
     if(horizSteps > maxStepsAllowed ||
         vertSteps > maxStepsAllowed) {
-        this.setlastOperationMsg("Pawn is trying to move more than allowed steps"); 
+        this.setlastOperationMsg("Can't move that far"); 
         return false;
+    }
+
+
+    if(this.canPlayerSkipMove) {
+	if (pawn != this.lastMovedPawn) {
+		this.setlastOperationMsg("Can skip turn"); 
+		return false;
+	}
     }
 
     this.setlastOperationMsg("Valid move");
@@ -540,12 +611,12 @@ Checkers.prototype.isValidMove
 
 Checkers.prototype.move = function(currBox, destBox) {
 
-    this.resetLastStatuses();
-    this.resetLastMessages();
-
     if(!this.isValidMove(currBox, destBox)) {
         return false;
     }
+
+    this.resetLastStatuses();
+    this.resetLastMessages();
 
     var temp_pwn = this.getNonEmptyBoxesOnTrack(
         currBox, destBox
@@ -556,29 +627,38 @@ Checkers.prototype.move = function(currBox, destBox) {
     if(eatenPawnBox) {
         this.removePawn(eatenPawnBox);
 	this.setwasLastMove_EatPawn(1);
+	PlaySoundWav("eat");
     }
 
     this.addPawn(pawn, destBox);
     this.removePawn(currBox);
-    this.promotePawnToKing_IfApplicable(destBox);
+    
+    this.setlastMovedPawn(pawn);
+    this.setlastMovedDestBox(destBox);
 
-    if (this.CurrentPlayer == this.player1)
+    var kingFlag = false;
+    kingFlag = this.promotePawnToKing_IfApplicable(destBox);
+
+    if (this.getCurrentPlayer() == this.plyr1)
 	this.totalMoves_Player1+= 1;
-    else if (this.CurrentPlayer == this.player2)
+    else if (this.getCurrentPlayer() == this.plyr2)
 	this.totalMoves_Player2+= 1;
 
-    if (this.getwasLastMove_EatPawn() != 1) {
+    if (this.plyr1.getPawnCnt() == 1 && this.plyr2.getPawnCnt() == 1)
+	this.totalStalemateMoves+= 1;
+
+    if ( (kingFlag) || (this.getwasLastMove_EatPawn() != 1) ) {
     	this.togglePlayer();
-	this.setlastUserMsg("Next turn");
+	this.setlastUserMsg("Turn of " + this.getCurrentPlayer().getName());
     }
     else {
 	var set = this.checkSetCanPlayerSkipMove();;
     	if (set)
-		this.setlastUserMsg("Can skip the turn");
+		this.setlastUserMsg("Can skip turn");
     }
 
     this.setlastOperationMsg("Successful move");
-
+    
     return true;
 }
 
@@ -603,13 +683,149 @@ var fromR;
 var fromC;
 var toR;
 var toC;
+var clickDestCellFlag = true;	//to manage additional move by the same pawn after eating
+var PawnAutoSelected = false;	//to manage additional move by the same pawn after eating
 
-var plyr1 = new Player('first');
-var plyr2 = new Player('second');
-var checkers = new Checkers(plyr1, plyr2);
-checkers.initialize(plyr1);
+var playerNoToStart = 1;
+var flgPowerfulKing = false;
+
+var plyr1;
+var plyr2;
+
+plyr1 = new Player('first');
+plyr2 = new Player('second');
+
+var checkers;
 
 let skipMoveButton = document.getElementById("skipMove");
+window.onload = init;
+document.getElementById("btnPlayAgain").onclick = init;
+document.getElementById("btnWhoStarts").onclick = toggleTurn;
+document.getElementById("btnHowManyPlayers").onclick = toggleMode;
+document.getElementById("btnKingPower").onclick = kingPower;
+
+
+function init() {
+
+	checkers = null;
+
+	checkers = new Checkers(plyr1, plyr2);
+	if (playerNoToStart == 2) {
+		checkers.initialize(plyr2);
+		message.textContent = "Message: Turn of second";
+	}
+	else {
+		checkers.initialize(plyr1);
+		message.textContent = "Message: Turn of first";
+	}
+
+	checkers.setisPowerfulKing(flgPowerfulKing);
+
+	reDrawCheckers()
+
+	clickDestCellFlag = true;
+	PawnAutoSelected = false;
+
+Array.from(myBoard.children).forEach(function(cell) { 
+
+  cell.onclick = function(elem) { 
+
+    if (!PawnAutoSelected)
+    	resetCheckersColor();
+
+    //message.textContent = "Message: ";
+
+    var element;
+    if (elem.target) { 
+	element = elem.target;
+    }
+    else if (elem) {
+	element = elem;
+    }
+
+    if (   ( (element.innerHTML === pieceUcode_pawn) || (element.innerHTML === blackpieceUcode_pawn) 
+		|| (element.innerHTML === pieceUcode_king) || (element.innerHTML === blackpieceUcode_king) ) 
+		 && (!PawnAutoSelected)  ) { 
+        from = element; 
+	fromR = getCellRC(cell, "Row");
+	fromC = getCellRC(cell, "Column");
+
+	setSelectedColorToBox(element, fromR, fromC);
+    } 
+    else {
+	toR = getCellRC(cell, "Row");
+	toC = getCellRC(cell, "Column");
+
+	message.textContent = "Message: ";
+    
+	var moveRes = checkers.move(new Box(fromR, fromC), new Box(toR, toC));
+
+	if (!moveRes) {
+		message.textContent+= checkers.getlastOperationMsg() + "; ";
+		PlaySoundWav("error");
+	}
+
+	message.textContent+= checkers.getlastUserMsg();
+
+		if (from && moveRes) { 
+			from = null; 
+			reDrawCheckers();
+			clickDestCellFlag = true;
+			PawnAutoSelected = false;
+
+			if (checkers.getcanPlayerSkipMove() == 1)
+				skipMoveButton.style.display = "block";
+			else
+				skipMoveButton.style.display = "none";
+    		} 
+	}
+
+	if ( (checkers.getcanPlayerSkipMove() == 1) && clickDestCellFlag )
+	{
+		if (checkers.getlastMovedDestBox())
+		{
+			fromR = checkers.getlastMovedDestBox().r;
+			fromC = checkers.getlastMovedDestBox().c;
+			clickDestCellFlag = false;
+			clickCell(fromR, fromC);
+			PawnAutoSelected = true;
+		}
+	}
+
+  } 
+}); 
+
+}
+
+function kingPower() {
+	if ( (document.getElementById("btnKingPower").innerHTML) == "Normal King" ) {
+		document.getElementById("btnKingPower").innerHTML = "Powerful King";
+		flgPowerfulKing = true;
+	}
+	else if ( (document.getElementById("btnKingPower").innerHTML) == "Powerful King" ) {
+		document.getElementById("btnKingPower").innerHTML = "Normal King";
+		flgPowerfulKing = false;
+	}
+	init();
+}
+
+function toggleMode() {
+
+	alert("Computer AI is not ready yet. Play two-player game for now");
+
+}
+
+function toggleTurn() {
+	if ( (document.getElementById("btnWhoStarts").innerHTML) == "Player 1 Starts" ) {
+		document.getElementById("btnWhoStarts").innerHTML = "Player 2 Starts";
+		playerNoToStart = 2;
+	}
+	else if ( (document.getElementById("btnWhoStarts").innerHTML) == "Player 2 Starts" ) {
+		document.getElementById("btnWhoStarts").innerHTML = "Player 1 Starts";
+		playerNoToStart = 1;
+	}
+	init();
+}
 
 skipMoveButton.onclick = function(){
 	checkers.skipMove();
@@ -618,63 +834,50 @@ skipMoveButton.onclick = function(){
 		skipMoveButton.style.display = "block";
 	else
 		skipMoveButton.style.display = "none";
+
+	message.textContent = "Message: ";
+	message.textContent+= checkers.getlastOperationMsg() + "; ";
+	message.textContent+= checkers.getlastUserMsg();
  
+	PawnAutoSelected = false;
 	resetCheckersColor();
 }
 
-Array.from(myBoard.children).forEach(function(cell) { 
+function clickCell(rw, co) {
 
-  cell.onclick = function(elem) { 
+	Array.from(myBoard.children).forEach(function(cell) { 
 
-    resetCheckersColor();
+		var fR = getCellRC(cell, "Row");
+		var fC = getCellRC(cell, "Column");
 
-    if ( (elem.target.innerHTML === pieceUcode_pawn) || (elem.target.innerHTML === blackpieceUcode_pawn) 
-		|| (elem.target.innerHTML === pieceUcode_king) || (elem.target.innerHTML === blackpieceUcode_king) ) { 
-        from = elem.target; 
-	fromR = getCellRC(cell, "Row");
-	fromC = getCellRC(cell, "Column");
+		if (rw == fR && co == fC) {
+			var id = ""+rw+co+"";
+			var e = document.getElementById(id);
+			if (typeof e.onclick == "function") {
+				fromR = rw;
+				fromC = co;
+    				cell.onclick(e);
+			}
+		}
+	});
 
-	setSelectedColorToBox(elem, fromR, fromC);
-    } 
-    else {
-	toR = getCellRC(cell, "Row");
-	toC = getCellRC(cell, "Column");
-    
-	var moveRes = checkers.move(new Box(fromR, fromC), new Box(toR, toC));
-	message.textContent = checkers.getlastOperationMsg() + " " + checkers.getlastUserMsg();
-
-	if (from && moveRes) { 
-		from = null; 
-		reDrawCheckers();
-
-		if (checkers.getcanPlayerSkipMove() == 1)
-			skipMoveButton.style.display = "block";
-		else
-			skipMoveButton.style.display = "none";
-    	} 
-
-	}
-  } 
-
-}); 
+}
 
 function setSelectedColorToBox(e, rw, co) {
-
-	Array.from(myBoard.children).forEach(function(c) { 
 
 	var brd = checkers.getBoard();
 	if (brd) {
 		if (brd[rw]) {
 			var p = brd[rw][co];
 			if (p) {
-				//console.log(p.getPlayer().getName());
 				if (p.getPlayer().getName() == checkers.getCurrentPlayer().getName()) {
-					e.target.style.backgroundColor = "lightgreen";
+					//e.style.backgroundColor = "lightgreen";
+					e.setAttribute("class", "lightgreen");
 				}
 			}
 		}
 	}
-	});
+
 }
 
 function reDrawCheckers() {
@@ -692,7 +895,6 @@ function reDrawCheckers() {
 		if (brd[row]) {
 			var p = brd[row][column];
 			if (p) {
-				//console.log(p.getPlayer().getName());
 				if (p.getPlayer().getName() == "first") {
 					if (p.getType() == "king")
 						c.innerHTML = pieceUcode_king;
@@ -719,12 +921,20 @@ function resetCheckersColor() {
 		row = ((i - (i % 8)) / 8);
 
 		if ((row % 2) == 0) {
-			if ((i % 2) == 0)
-				c.style.backgroundColor = "#FFEB3B";
+			if ((i % 2) == 0) {
+				//c.style.backgroundColor = "#FFEB3B";
+				c.setAttribute("class", "yellow");
+			}
+			else
+				c.setAttribute("class", "red");
 		}
 		else if ((row % 2) == 1) {
-			if ((i % 2) == 1)
-				c.style.backgroundColor = "#FFEB3B";
+			if ((i % 2) == 1) {
+				//c.style.backgroundColor = "#FFEB3B";
+				c.setAttribute("class", "yellow");
+			}
+			else
+				c.setAttribute("class", "red");
 		}
 
 		i++;

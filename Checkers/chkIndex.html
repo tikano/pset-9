@@ -10,22 +10,22 @@
   
 <body>
 <div id="div1" align=center>
-
 		<ul>
   			<li><a href="../index.html">Home</a></li>
   			<li><a href="../TicTacToe/tttIndex.html">Tic-Tac-Toe</a></li>
   			<li><a href="../BrickBreaker/bbIndex.html">Brick Breaker</a></li>
   			<li><a class="active" href="chkIndex.html">Checkers</a></li>
+  			<li><a href="../faq.html">??</a></li>
 		</ul>
 
 <h1>Checkers</h1>
 
-<h2>Turn: </h2> 
-<button id="skipMove" style="display:none;">Skip Move?</button>
+<h2>Message: </h2> 
+<button id="skipMove" style="display:none;">Skip turn?</button>
 
 	<div class="checkersB" class="disable-select" style="cursor: pointer;"> 
             <!-- 0th row --> 
-            <div id=00 class="yellow" class="disable-select" style="cursor: pointer;" data-row="1">&#9920;</div> 
+            <div id=00 class="yellow" class="disable-select" data-row="1">&#9920;</div> 
             <div id=01 class="red"></div> 
             <div id=02 class="yellow" class="disable-select" data-row="1">&#9920;</div> 
             <div id=03 class="red"></div> 
@@ -104,6 +104,34 @@
             <div id=76 class="red"></div> 
             <div id=77 class="yellow" class="disable-select" data-row="8">&#9922;</div> 
         </div>
+
+      <div id = "buttons">
+		<button id="btnPlayAgain">Play Again!</button>
+		</br>
+		<button id="btnHowManyPlayers">Two Players</button>
+		</br>
+		<button id="btnWhoStarts">Player 1 Starts</button>
+		</br>
+		<button id="btnKingPower">Normal King</button>
+      </div>
+
 </div>
+
+    <div class = "scores">
+      <div class ="score">
+        <h3>Player1</h3>
+        <h4 id="player1Score"> 0 </h4>
+      </div>
+      <div class ="score">
+        <h3>Tie</h3>
+        <h4 id="tieScore"> 0 </h4>
+      </div>
+      <div class ="score">
+        <h3>Player2</h3>
+        <h4 id="player2Score"> 0 </h4>
+      </div>
+    </div>
+
+	Checkers by: Om Desai
 </body>
 </html>
