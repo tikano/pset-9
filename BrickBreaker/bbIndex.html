@@ -2,27 +2,27 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>Brick Breaker</title>
+	<title>Om Desai's Games Suite - Brick Breaker</title>
 	<link rel="stylesheet" href="bbStyles.css">
+	<script src="brickbreaker.js"></script>
 </head>
 <body>
 <div id="div1" align=center>
 		<ul>
   			<li><a href="../index.html">Home</a></li>
-  			<li><a href="../TicTacToe/tttIndex.html">Tic-Tac-Toe</a></li>
   			<li><a class="active" href="bbIndex.html">Brick Breaker</a></li>
   			<li><a href="../Checkers/chkIndex.html">Checkers</a></li>
+  			<li><a href="../TicTacToe/tttIndex.html">Tic-Tac-Toe</a></li>
   			<li><a href="../faq.html">??</a></li>
 		</ul>
-	<canvas id="Headingcanvas" width="825px" height="30px">
+	<canvas id="Headingcanvas" width="825px" height="50px">
 	</canvas>
-	<canvas id="Topcanvas" width="825px" height="60px">
+	<canvas id="Topcanvas" width="825px" height="30px">
 	</canvas>
 	<canvas id="Topcanvas2" width="825px" height="20px">
 	</canvas>
 	<canvas id="BBcanvas" width="825px" height="420px">
 	</canvas>
-	<script src="brickbreaker.js"></script>
 	<span id='ct' style="background-color: #FFFF00"></span>
 	<br/>
 	<div id="div2" align=center>
@@ -35,8 +35,14 @@
 		<input type="radio" name="complexity" value="8.5" class="complexity"><label for="8.5">&nbsp;Death</label></input>
 	<div>
 	<br/>
-	<button id="start">Start</button> &nbsp;&nbsp;&nbsp;&nbsp; <button id="pause" style="display: none;">Pause</button>
+	<button id="start" class="button1">Start</button>
+	<button id="pause" style="display: none;" class="button1">Pause</button>
 </div>
+
+<div class="footer">
+	<br/>
 	Brick Breaker by: Om Desai
+</div>
+
 </body>
 </html>

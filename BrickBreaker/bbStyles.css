@@ -13,30 +13,46 @@ ul {
   width: 396px;
 }
 
+
+
 #BBcanvas {
+  	font-family: "Roboto", monospace;
 	background: #eee;
 	display: block;
 	margin: :0 auto;
 }
 
-#start, #pause{
-  	font-size: 21px;
-  	line-height: 30px;
-  	width: 200px;
-  	display:inline-block;
-}
 
 .complexity{
+  	font-family: "Roboto", monospace;
 	width: 30px;
 	justify-content: center;
 }
 
 label{
-	font-size: 21px;
+	font-family: "Roboto", monospace;
+	font-size: 15px;
 }
 
+.button1 {
+  height: 25px;
+  width: 150px;
+  margin: 1px 1px;
+  text-align: center;
+  vertical-align: middle;
+  text-decoration: none;
+  display: inline;
+  font-size: 15px;
+  cursor: pointer;
+}
 
-
+.footer{
+  font-family: "Roboto", monospace;
+  margin: 0 auto;
+  font-size: 15x;
+  font-weight: lighter;
+  color: blue;
+}
 
 
 
