@@ -361,25 +361,25 @@ function drawSpeed()
 
 function drawScore()
 {
-	ctx2.font="16px Roboto";
-	ctx2.fillStyle="#000000";
-	ctx2.fillText("Score:",8,20);
-	ctx2.font="20px Roboto";
-	ctx2.fillStyle = "#0095DD";
-	ctx2.fillText(" "+score+"/"+totalPossibleScore,70,20);
+	ctx3.font="16px Roboto";
+	ctx3.fillStyle="#000000";
+	ctx3.fillText("Score:",8,20);
+	ctx3.font="20px Roboto";
+	ctx3.fillStyle = "#0095DD";
+	ctx3.fillText(" "+score+"/"+totalPossibleScore,70,20);
 }
 
 function drawLives()
 {
-	ctx2.font="16px Roboto";
-	ctx2.fillStyle="#000000";
+	ctx3.font="16px Roboto";
+	ctx3.fillStyle="#000000";
 	if(lives < 0){
 		lives = 0;
 	}
-	ctx2.fillText("Lives:",canvas2.width-100,20);
-	ctx2.font="20px Roboto";
-	ctx2.fillStyle = "#0095DD";
-	ctx2.fillText(" "+lives,canvas2.width-100+62,20);
+	ctx3.fillText("Lives:",canvas3.width-100,20);
+	ctx3.font="20px Roboto";
+	ctx3.fillStyle = "#0095DD";
+	ctx3.fillText(" "+lives,canvas3.width-100+62,20);
 }
 
 function draw()
