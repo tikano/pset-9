@@ -12,14 +12,12 @@ body {
   width: 396px;
 }
 
-
 h1 {
   margin: 0 auto;
-  font-family: "Major Mono Display", monospace;
-  font-size: 30px;
+  font-weight: bolder;
+  font-size: 35px;
   color: blue;
 }
-
 
 h2 {
   margin: 0 auto;
@@ -113,32 +111,16 @@ h4 {
   cursor: pointer;
 }
 
-#reset-button, #player-toggle, #start-turn {
-  background-color: white;
-  border: 1px solid black;
-  color: black;
-  font-size: 21px;
-  line-height: 30px;
-  margin-top: 1%;
-  margin-bottom: 1%;
-  margin-left:auto;
-  margin-right:auto;
-  justify-content: center;
-  align-items: center;
+
+.button1 {
+  height: 25px;
+  width: 150px;
+  margin: 1px 1px;
   text-align: center;
-  width: 396px;
-  display:inline-block;
-}
-
-
-#reset-button:hover, #player-toggle:hover, #start-turn:hover {
-  background-color: black;
-  color: white;
+  text-decoration: none;
+  display: inline;
+  font-size: 15px;
   cursor: pointer;
-}
-
-#buttons{
-
 }
 
 .disable-select {
@@ -151,7 +133,13 @@ h4 {
                                   supported by Chrome, Opera and Firefox */
 }
 
-
+.footer{
+  font-family: "Roboto", monospace;
+  margin: 0 auto;
+  font-size: 15x;
+  font-weight: lighter;
+  color: blue;
+}
 
 
 

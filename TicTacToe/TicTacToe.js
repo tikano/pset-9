@@ -72,7 +72,7 @@ function render() {
   });
 
   message.textContent =
-    win === "T" ? "It's a tie!" : win ? `${win} wins!` : `Turn: ${turn}`;
+    win === "T" ? "It's a tie!" : win ? `${win} wins!` : `Turn of ${turn}`;
 
   Xscore.textContent = Xwins;
   Tiescore.textContent = Ties;
