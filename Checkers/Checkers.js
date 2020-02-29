@@ -129,6 +129,7 @@ function Checkers(vPlyr1, vPlyr2, vTimePerMoveSec = 0, vIsAIPlay = 0) {
 
     this.isAIPlay = vIsAIPlay;
     this.isPowerfulKing = false;
+    this.isAllowSkipMove = true;
 }
 
 Checkers.prototype.resetLastMessages = function() {
@@ -161,6 +162,14 @@ Checkers.prototype.setisPowerfulKing = function(val) {
 
 Checkers.prototype.getisPowerfulKing = function() {
     return this.isPowerfulKing;
+};
+
+Checkers.prototype.setisAllowSkipMove = function(val) {
+    this.isAllowSkipMove = val;
+};
+
+Checkers.prototype.getisAllowSkipMove = function() {
+    return this.isAllowSkipMove;
 };
 
 Checkers.prototype.getisTimedGame = function() {
@@ -303,10 +312,56 @@ Checkers.prototype.getBoard = function() {
     return this.board;
 };
 
-Checkers.prototype.checkSetCanPlayerSkipMove = function() {
-	this.canPlayerSkipMove = 1;
+Checkers.prototype.setPlayerSkipMove = function(curBox) {
 	//logic to check if second move is possible at all or the pawn has no place to go
+
+if (this.isAllowSkipMove) {
+	this.canPlayerSkipMove = 1;
+
+	var pwn;
+	var curPlayer;
+	var curR;
+	var curC;
+
+	if (curBox) {
+		curR = curBox.getR();
+		curC = curBox.getC();
+		pwn = this.getPawnByBox(curBox);
+	
+		if (pwn) {
+			if (pwn.getType() != "king") {
+				curPlayer = pwn.getPlayer();
+				if (curPlayer) {
+					if (curPlayer == this.plyr1) {
+						if (  ( !this.isValidMove(curBox, new Box(curR+1, curC-1)) ) &&
+							( !this.isValidMove(curBox, new Box(curR+2, curC-2)) ) && 
+							( !this.isValidMove(curBox, new Box(curR+1, curC+1)) ) &&
+							( !this.isValidMove(curBox, new Box(curR+2, curC+2)) )  ) {
+								this.canPlayerSkipMove = 0;
+								return false;
+						}
+					}
+					else if (curPlayer == this.plyr2) {
+						if (  ( !this.isValidMove(curBox, new Box(curR-1, curC-1)) ) &&
+							( !this.isValidMove(curBox, new Box(curR-2, curC-2)) ) && 
+							( !this.isValidMove(curBox, new Box(curR-1, curC+1)) ) &&
+							( !this.isValidMove(curBox, new Box(curR-2, curC+2)) )  ) {
+								this.canPlayerSkipMove = 0;
+								return false;
+						}
+					}
+				}
+			}
+		}
+	}
+
 	return true;
+}
+else {
+	this.canPlayerSkipMove = 0;
+	return false;
+}
+
 };
 
 Checkers.prototype.skipMove = function(pawn, Box) {
@@ -504,22 +559,25 @@ function PlaySoundMP3(soundObj) {
 }
 
 Checkers.prototype.isValidMove
-    = function(currBox, destBox) {
+    = function(currBox, destBox, flgSetMsg = true) {
 
     if(currBox.getC() == destBox.getC() &&
         currBox.getR() == destBox.getR()) {
-	this.setlastOperationMsg("Not moving");
+	if (flgSetMsg)
+		this.setlastOperationMsg("Not moving");
         return false;
     }
 
     var pawn = this.getPawnByBox(currBox);
     if(!pawn) {
-	this.setlastOperationMsg("No piece");
+	if (flgSetMsg)
+		this.setlastOperationMsg("No piece");
         return false;
     }
 
     if(pawn.getPlayer() !== this.getCurrentPlayer()) {
-       this.setlastOperationMsg("Not your piece"); 
+	if (flgSetMsg)
+       		this.setlastOperationMsg("Not your piece"); 
        return false;
     }
 
@@ -527,23 +585,27 @@ Checkers.prototype.isValidMove
         destBox.getC() < 0 ||
         destBox.getR() > this.boardSize -1 ||
         destBox.getC() > this.boardSize -1) {
-        this.setlastOperationMsg("Outside board"); 
+	if (flgSetMsg)
+        	this.setlastOperationMsg("Outside board"); 
         return false;
     }
 
     if(!this.isBoxEmpty(destBox)) {
-        this.setlastOperationMsg("Box not available"); 
+	if (flgSetMsg)
+        	this.setlastOperationMsg("Box not available"); 
         return false;
     }
 
     if(pawn.getType() !== 'king') {
         if(pawn.getPlayer() == this.plyr1) {
             if(currBox.getR() > destBox.getR()) {
-        	this.setlastOperationMsg("Can't move back"); 
+		if (flgSetMsg)
+        		this.setlastOperationMsg("Can't move back"); 
                 return false;
             }
         } else if(currBox.getR() < destBox.getR()) {
-            this.setlastOperationMsg("Can't move back"); 
+	    if (flgSetMsg)
+            	this.setlastOperationMsg("Can't move back"); 
             return false;
         }
     }
@@ -556,7 +618,8 @@ Checkers.prototype.isValidMove
         destBox.getC() - currBox.getC()
     );
     if(horizSteps !== vertSteps) {
-        this.setlastOperationMsg("Wrong move"); 
+	if (flgSetMsg)
+        	this.setlastOperationMsg("Wrong move"); 
         return false;
     }
 
@@ -565,8 +628,10 @@ Checkers.prototype.isValidMove
         = this.getNonEmptyBoxesOnTrack(
             currBox, destBox
     );
+
     if (BoxesWithPawns.length > 2) {
-        this.setlastOperationMsg("Can't move that far"); 
+	if (flgSetMsg)
+        	this.setlastOperationMsg("Can't move that far"); 
         return false;
     }
 
@@ -590,7 +655,8 @@ Checkers.prototype.isValidMove
         }
 
         if(temp_pwn.getPlayer() === pawn.getPlayer()) {
-            this.setlastOperationMsg("Can't eat own piece"); 
+	    if (flgSetMsg)
+            	this.setlastOperationMsg("Can't eat own piece"); 
             return false;
         }
     }
@@ -598,19 +664,22 @@ Checkers.prototype.isValidMove
 
     if(horizSteps > maxStepsAllowed ||
         vertSteps > maxStepsAllowed) {
-        this.setlastOperationMsg("Can't move that far"); 
+	if (flgSetMsg)
+        	this.setlastOperationMsg("Can't move that far"); 
         return false;
     }
 
 
-    if(this.canPlayerSkipMove) {
+    if(this.canPlayerSkipMove == 1) {
 	if (pawn != this.lastMovedPawn) {
-		this.setlastOperationMsg("Can skip turn"); 
+		if (flgSetMsg)
+			this.setlastOperationMsg("Can skip turn"); 
 		return false;
 	}
     }
 
-    this.setlastOperationMsg("Valid move");
+    if (flgSetMsg)
+    	this.setlastOperationMsg("Valid move");
     return true;
 }
 
@@ -657,9 +726,13 @@ Checkers.prototype.move = function(currBox, destBox) {
 	this.setlastUserMsg("Turn of " + this.getCurrentPlayer().getName());
     }
     else {
-	var set = this.checkSetCanPlayerSkipMove();;
-    	if (set)
+    	if (this.setPlayerSkipMove(destBox)) {
 		this.setlastUserMsg("Can skip turn");
+	}
+	else {
+    		this.togglePlayer();
+		this.setlastUserMsg("Turn of " + this.getCurrentPlayer().getName());
+	}
     }
 
     this.setlastOperationMsg("Successful move");
@@ -699,6 +772,7 @@ var PawnAutoSelected = false;	//to manage additional move by the same pawn after
 
 var playerNoToStart = 1;
 var flgPowerfulKing = false;
+var flgAllowSkipMove = true;
 var player1Score = 0;
 var player2Score = 0;
 var tieScore = 0;
@@ -714,6 +788,7 @@ document.getElementById("btnPlayAgain").onclick = init;
 document.getElementById("btnWhoStarts").onclick = toggleTurn;
 document.getElementById("btnHowManyPlayers").onclick = toggleMode;
 document.getElementById("btnKingPower").onclick = kingPower;
+document.getElementById("btnallowSkipMove").onclick = allowSkipMove;
 
 function init() {
 
@@ -737,6 +812,7 @@ function init() {
 	}
 
 	checkers.setisPowerfulKing(flgPowerfulKing);
+	checkers.setisAllowSkipMove(flgAllowSkipMove);
 	skipMoveButton.style.display = "none";
 
 	reDrawCheckers()
@@ -786,7 +862,6 @@ if ( ! ( ( checkers.isGameWon() ) || ( checkers.isGameStalemate() ) ) ) {
 	txtmsg.innerText+= checkers.getlastUserMsg();
 
 		if (from && moveRes) { 
-
 			if ( checkers.isGameWon() || checkers.isGameStalemate() ) {
 				reDrawCheckers();
 				if (checkers.isGameWon()){
@@ -824,10 +899,12 @@ if ( ! ( ( checkers.isGameWon() ) || ( checkers.isGameStalemate() ) ) ) {
 				clickDestCellFlag = true;
 				PawnAutoSelected = false;
 
-				if (checkers.getcanPlayerSkipMove() == 1)
+				if (checkers.getcanPlayerSkipMove() == 1) {
 					skipMoveButton.style.display = "inline";
-				else
+				}
+				else {
 					skipMoveButton.style.display = "none";
+				}
     			}
 		} 
 	}
@@ -851,7 +928,7 @@ if ( ! ( ( checkers.isGameWon() ) || ( checkers.isGameStalemate() ) ) ) {
 }
 else
 {
-	alert(1);
+	//alert(1);
 }
   } 
 }); 
@@ -868,6 +945,21 @@ function kingPower() {
 	else if ( (document.getElementById("btnKingPower").innerHTML) == "Powerful King" ) {
 		document.getElementById("btnKingPower").innerHTML = "Super King";
 		flgPowerfulKing = false;
+	}
+	init();
+	}
+}
+
+function allowSkipMove() {
+
+	if (window.confirm("This will reset the existing game")) {
+	if ( (document.getElementById("btnallowSkipMove").innerHTML) == "Allow No Skip" ) {
+		document.getElementById("btnallowSkipMove").innerHTML = "Allow Skip";
+		flgAllowSkipMove = true;
+	}
+	else if ( (document.getElementById("btnallowSkipMove").innerHTML) == "Allow Skip" ) {
+		document.getElementById("btnallowSkipMove").innerHTML = "Allow No Skip";
+		flgAllowSkipMove = false;
 	}
 	init();
 	}
@@ -937,7 +1029,6 @@ function setSelectedColorToBox(e, rw, co) {
 			var p = brd[rw][co];
 			if (p) {
 				if (p.getPlayer().getName() == checkers.getCurrentPlayer().getName()) {
-					//e.style.backgroundColor = "lightgreen";
 					e.setAttribute("class", "lightgreen");
 				}
 			}
