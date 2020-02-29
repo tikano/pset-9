@@ -177,3 +177,8 @@ li a:hover {
 .active {
   background-color: #4CAF50;
 }
+
+
+ul {
+  width: 355px;
+}

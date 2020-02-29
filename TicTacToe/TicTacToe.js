@@ -84,7 +84,7 @@ function takeTurn(e) {
   if (!win) {
     if(mode == "Two Players" || turn == "X"){
       index = squares.findIndex(function(square) {
-        return square === e.target;
+      		return square === e.target;
       });
     }
     else{
@@ -93,16 +93,24 @@ function takeTurn(e) {
 
     if (board[index] === "") {
       board[index] = turn;
+
+      if (turn == "X") PlaySoundMp3("tic");
+      if (turn == "O") PlaySoundMp3("tac");
+
       turn = turn === "X" ? "O" : "X";
+
       win = getWinner();
       if(win == "X"){
         Xwins++;
+	PlaySoundMp3("win");
       }
       else if(win == "O"){
         Owins++;
+	PlaySoundMp3("win");
       }
       else if(win == "T"){
         Ties++;
+	PlaySoundMp3("tie");
       }
 
       render();
