@@ -113,6 +113,19 @@ h4 {
   cursor: pointer;
 }
 
+.button3 {
+  height: 25px;
+  width: 150px;
+  margin: 1px 1px;
+  text-align: center;
+  text-decoration: none;
+  display: inline;
+  font-size: 15px;
+  cursor: pointer;
+  color: red;
+}
+
+
 .label1 {
   margin: 0 auto;
   font-size: 15px;
@@ -164,3 +177,6 @@ li a:hover {
   background-color: #4CAF50;
 }
 
+ul {
+  width: 355px;
+}

@@ -95,7 +95,7 @@ Box.prototype.getC = function() {
 
 /* Checkers Object */
 
-function Checkers(vPlyr1, vPlyr2, vTimePerMoveSec = 0, vIsAIPlay = 0) {
+function Checkers(vPlyr1, vPlyr2, vTimePerMoveSec = 0) {
     this.plyr1 = vPlyr1;
     this.plyr2 = vPlyr2;
     this.currentPlayerTurn = plyr1;
@@ -127,7 +127,7 @@ function Checkers(vPlyr1, vPlyr2, vTimePerMoveSec = 0, vIsAIPlay = 0) {
     	this.timePerMoveSec = vTimePerMoveSec;
     }
 
-    this.isAIPlay = vIsAIPlay;
+    this.isAIPlay = false;
     this.isPowerfulKing = false;
     this.isAllowSkipMove = true;
 }
@@ -172,12 +172,16 @@ Checkers.prototype.getisAllowSkipMove = function() {
     return this.isAllowSkipMove;
 };
 
-Checkers.prototype.getisTimedGame = function() {
-    return this.isTimedGame;
+Checkers.prototype.setisAIPlay = function(val) {
+    return this.isAIPlay = val;
 };
 
 Checkers.prototype.getisAIPlay = function() {
     return this.isAIPlay;
+};
+
+Checkers.prototype.getisTimedGame = function() {
+    return this.isTimedGame;
 };
 
 Checkers.prototype.gettimePerMoveSec = function() {
@@ -773,29 +777,41 @@ var PawnAutoSelected = false;	//to manage additional move by the same pawn after
 var playerNoToStart = 1;
 var flgPowerfulKing = false;
 var flgAllowSkipMove = true;
+var flgAIPlay = false;
 var player1Score = 0;
 var player2Score = 0;
 var tieScore = 0;
 
+var flgAIClicking = false;
+var flgAILastMoveSuccess = false;
+
+var plyr1_name;
+var plyr2_name;
 var plyr1;
 var plyr2;
 
 var checkers;
 
 let skipMoveButton = document.getElementById("skipMove");
+let aiMoveButton = document.getElementById("btnAIMove");
 window.onload = init;
-document.getElementById("btnPlayAgain").onclick = init;
+document.getElementById("btnPlayAgain").onclick = playAgain;
 document.getElementById("btnWhoStarts").onclick = toggleTurn;
-document.getElementById("btnHowManyPlayers").onclick = toggleMode;
+document.getElementById("btnAIPlay").onclick = toggleAIPlay;
 document.getElementById("btnKingPower").onclick = kingPower;
 document.getElementById("btnallowSkipMove").onclick = allowSkipMove;
+aiMoveButton.onclick = makeAIMove;
 
 function init() {
 
 	checkers = null;
 
-	plyr1 = new Player('Player1');
-	plyr2 = new Player('Player2');
+	plyr1_name = "Player1";
+	plyr2_name = "Player2";
+	plyr1 = new Player(plyr1_name);
+	plyr2 = new Player(plyr2_name);
+
+	aiMoveButton.innerHTML = plyr2_name + " AI Move";
 
 	txtplayer1Pawns.textContent = "12";
 	txtplayer2Pawns.textContent = "12";
@@ -813,7 +829,13 @@ function init() {
 
 	checkers.setisPowerfulKing(flgPowerfulKing);
 	checkers.setisAllowSkipMove(flgAllowSkipMove);
+	checkers.setisAIPlay(flgAIPlay);
 	skipMoveButton.style.display = "none";
+
+	if (flgAIPlay)
+		aiMoveButton.style.display = "inline";
+	else
+		aiMoveButton.style.display = "none";
 
 	reDrawCheckers()
 
@@ -825,6 +847,16 @@ Array.from(myBoard.children).forEach(function(cell) {
   cell.onclick = function(elem) { 
 
 if ( ! ( ( checkers.isGameWon() ) || ( checkers.isGameStalemate() ) ) ) {
+
+if ( (flgAIPlay) && (!flgAIClicking) ) {
+	if (checkers.getCurrentPlayer()) {
+		if (checkers.getCurrentPlayer().getName() == plyr2_name) {
+			PlaySoundWav("error");
+			alert("Let AI play as " + plyr2_name);
+			return false;
+		}
+	}
+}
 
     if (!PawnAutoSelected)
     	resetCheckersColor();
@@ -853,10 +885,17 @@ if ( ! ( ( checkers.isGameWon() ) || ( checkers.isGameStalemate() ) ) ) {
 	txtmsg.innerText = "";    
 
 	var moveRes = checkers.move(new Box(fromR, fromC), new Box(toR, toC));
+	flgAILastMoveSuccess = moveRes;
+
+if ( (flgAIClicking) && (flgAILastMoveSuccess) )
+	console.log("Success: " + fromR + "," + fromC + " to " + toR + "," + toC);
+if ( (flgAIClicking) && (!flgAILastMoveSuccess) )
+	console.log("Failed: " + fromR + "," + fromC + " to " + toR + "," + toC);
 
 	if (!moveRes) {
 		txtmsg.innerText+= checkers.getlastOperationMsg() + "; ";
-		PlaySoundWav("error");
+		if (!flgAIClicking)
+			PlaySoundWav("error");
 	}
 
 	txtmsg.innerText+= checkers.getlastUserMsg();
@@ -872,7 +911,7 @@ if ( ! ( ( checkers.isGameWon() ) || ( checkers.isGameStalemate() ) ) ) {
 						player2Score+= 1;
 
 						txtmsg.innerText = "Game won by " + plyr2.getName();
-						PlaySoundWAV("win1");
+						PlaySoundWav("win1");
 						alert("Game won by "  + plyr2.getName());			
 					}
 					if (plyr2.getPawnCnt() == 0) {
@@ -917,7 +956,7 @@ if ( ! ( ( checkers.isGameWon() ) || ( checkers.isGameStalemate() ) ) ) {
 				fromR = checkers.getlastMovedDestBox().r;
 				fromC = checkers.getlastMovedDestBox().c;
 				clickDestCellFlag = false;
-				clickCell(fromR, fromC);
+				clickCell(fromR, fromC, "forFrom");
 				PawnAutoSelected = true;
 			}
 		}
@@ -930,8 +969,113 @@ else
 {
 	//alert(1);
 }
+
+
   } 
 }); 
+
+}
+
+
+function makeAIMove() {
+
+flgAILastMoveSuccess = false;
+
+if (checkers.getCurrentPlayer()) {
+	if (checkers.getCurrentPlayer().getName() == plyr2_name) {
+
+	Array.from(myBoard.children).forEach(function(c) { 
+
+	var brd = checkers.getBoard();
+	if (brd) {
+		var row = getCellRC(c, "Row");
+		var column = getCellRC(c, "Column");
+		if (brd[row]) {
+			var p = brd[row][column];
+			if (p) {
+				if (p.getPlayer().getName() == plyr2.getName()) {
+					if (p.getType() == "king") {
+						//console.log("king: " + row + "," + column);
+
+						if (!flgAILastMoveSuccess)
+							AIMoveFromTo(row, column, row+2, column+2);
+						if (!flgAILastMoveSuccess)	
+							AIMoveFromTo(row, column, row+2, column-2);
+
+						if (!flgAILastMoveSuccess)
+							AIMoveFromTo(row, column, row-2, column+2);
+						if (!flgAILastMoveSuccess)	
+							AIMoveFromTo(row, column, row-2, column-2);
+
+					}
+					else if (p.getType() == "pawn") {
+						//console.log("pawn: " + row + "," + column);
+						
+						if (!flgAILastMoveSuccess)	
+							AIMoveFromTo(row, column, row-2, column-2);
+						if (!flgAILastMoveSuccess)
+							AIMoveFromTo(row, column, row-2, column+2);
+					}
+				}
+			}
+		}
+	}
+	});
+
+	Array.from(myBoard.children).forEach(function(c) { 
+
+	var brd = checkers.getBoard();
+	if (brd) {
+		var row = getCellRC(c, "Row");
+		var column = getCellRC(c, "Column");
+		if (brd[row]) {
+			var p = brd[row][column];
+			if (p) {
+				if (p.getPlayer().getName() == plyr2.getName()) {
+					if (p.getType() == "pawn") {
+						//console.log("pawn: " + row + "," + column);
+						
+						if (!flgAILastMoveSuccess)	
+							AIMoveFromTo(row, column, row-1, column-1);
+						if (!flgAILastMoveSuccess)
+							AIMoveFromTo(row, column, row-1, column+1);
+
+					}
+					else if (p.getType() == "king") {
+						//console.log("king: " + row + "," + column);
+
+						if (!flgAILastMoveSuccess)	
+							AIMoveFromTo(row, column, row+1, column-1);
+						if (!flgAILastMoveSuccess)
+							AIMoveFromTo(row, column, row+1, column+1);
+
+						if (!flgAILastMoveSuccess)	
+							AIMoveFromTo(row, column, row-1, column-1);
+						if (!flgAILastMoveSuccess)
+							AIMoveFromTo(row, column, row-1, column+1);
+					}
+
+				}
+			}
+		}
+	}
+
+	});
+	}
+else {
+	PlaySoundWav("error");
+}
+}
+flgAILastMoveSuccess = false;
+}
+
+function AIMoveFromTo(Fr, Fc, Tr, Tc) {
+	
+	flgAIClicking = true;
+	clickCell(Fr, Fc, "forFrom");
+	flgAIClicking = true;
+	clickCell(Tr, Tc, "forTo");
+	flgAIClicking = false;
 
 }
 
@@ -965,24 +1109,45 @@ function allowSkipMove() {
 	}
 }
 
-function toggleMode() {
+function toggleAIPlay() {
 
-	alert("Computer AI is not ready yet. Play two-player game for now");
-
+	if (window.confirm("This will reset the existing game")) {
+	if ( (document.getElementById("btnAIPlay").innerHTML) == "Two Players" ) {
+		document.getElementById("btnAIPlay").innerHTML = "One Player";
+		flgAIPlay = true;
+		aiMoveButton.style.display = "inline";
+	}
+	else if ( (document.getElementById("btnAIPlay").innerHTML) == "One Player" ) {
+		document.getElementById("btnAIPlay").innerHTML = "Two Players";
+		flgAIPlay = false;
+		aiMoveButton.style.display = "none";
+	}
+	init();
+	}
 }
 
 function toggleTurn() {
+
 	if (window.confirm("This will reset the existing game")) {
-	if ( (document.getElementById("btnWhoStarts").innerHTML) == "Player1 Starts" ) {
-		document.getElementById("btnWhoStarts").innerHTML = "Player2 Starts";
+	if ( (document.getElementById("btnWhoStarts").innerHTML) == plyr1_name + " Starts" ) {
+		document.getElementById("btnWhoStarts").innerHTML = plyr2_name + " Starts";
 		playerNoToStart = 2;
 	}
-	else if ( (document.getElementById("btnWhoStarts").innerHTML) == "Player2 Starts" ) {
-		document.getElementById("btnWhoStarts").innerHTML = "Player1 Starts";
+	else if ( (document.getElementById("btnWhoStarts").innerHTML) == plyr2_name + " Starts" ) {
+		document.getElementById("btnWhoStarts").innerHTML = plyr1_name + " Starts";
 		playerNoToStart = 1;
 	}
 	init();
 	}
+
+}
+
+function playAgain() {
+
+	if (window.confirm("This will reset the existing game")) {
+		init();
+	}
+
 }
 
 skipMoveButton.onclick = function(){
@@ -1001,7 +1166,7 @@ skipMoveButton.onclick = function(){
 	resetCheckersColor();
 }
 
-function clickCell(rw, co) {
+function clickCell(rw, co, flgFor) {
 
 	Array.from(myBoard.children).forEach(function(cell) { 
 
@@ -1012,8 +1177,14 @@ function clickCell(rw, co) {
 			var id = ""+rw+co+"";
 			var e = document.getElementById(id);
 			if (typeof e.onclick == "function") {
-				fromR = rw;
-				fromC = co;
+				if (flgFor == "forFrom") {
+					fromR = rw;
+					fromC = co;
+				}
+				else if (flgFor == "toFrom") {
+					toR = rw;
+					toC = co;
+				}
     				cell.onclick(e);
 			}
 		}
