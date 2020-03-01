@@ -911,7 +911,7 @@ if ( (flgAIClicking) && (!flgAILastMoveSuccess) )
 						player2Score+= 1;
 
 						txtmsg.innerText = "Game won by " + plyr2.getName();
-						PlaySoundWav("win1");
+						PlaySoundMP3("win");
 						alert("Game won by "  + plyr2.getName());			
 					}
 					if (plyr2.getPawnCnt() == 0) {
