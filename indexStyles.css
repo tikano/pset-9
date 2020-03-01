@@ -12,14 +12,6 @@ body {
   width: 396px;
 }
 
-div {
-  text-align: center;
-  font-family: "Roboto", monospace;
-  margin-right:auto;
-  margin-left: auto;
-  width: 396px;
-}
-
 h1 {
   margin: 0 auto;
   font-weight: bolder;
