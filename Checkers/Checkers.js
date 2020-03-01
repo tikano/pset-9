@@ -467,7 +467,7 @@ Checkers.prototype.promotePawnToKing_IfApplicable = function(currBox) {
     		this.setwasLastMove_PromotedPawn(0);
 
 	    var rowForPromotion = 0;
-	    //if(this.firstTurnPlayer === pawn.getPlayer()) {
+
 	    if(pawn.getPlayer() == this.plyr1) {
         	rowForPromotion = this.boardSize -1;
     	    }
@@ -776,7 +776,7 @@ var PawnAutoSelected = false;	//to manage additional move by the same pawn after
 
 var playerNoToStart = 1;
 var flgPowerfulKing = false;
-var flgAllowSkipMove = true;
+var flgAllowSkipMove = false;
 var flgAIPlay = false;
 var player1Score = 0;
 var player2Score = 0;
@@ -852,7 +852,7 @@ if ( (flgAIPlay) && (!flgAIClicking) ) {
 	if (checkers.getCurrentPlayer()) {
 		if (checkers.getCurrentPlayer().getName() == plyr2_name) {
 			PlaySoundWav("error");
-			alert("Let AI play as " + plyr2_name);
+			alert("Let AI play as " + plyr2_name + ". Click '" + plyr2_name + " AI Move' button");
 			return false;
 		}
 	}
@@ -985,7 +985,7 @@ if (checkers.getCurrentPlayer()) {
 	if (checkers.getCurrentPlayer().getName() == plyr2_name) {
 
 	Array.from(myBoard.children).forEach(function(c) { 
-
+	if (!flgAILastMoveSuccess) {
 	var brd = checkers.getBoard();
 	if (brd) {
 		var row = getCellRC(c, "Row");
@@ -1007,23 +1007,38 @@ if (checkers.getCurrentPlayer()) {
 						if (!flgAILastMoveSuccess)	
 							AIMoveFromTo(row, column, row-2, column-2);
 
+						if (flgPowerfulKing) {
+							for (var r=(8-row); r>2; r--) {
+								if (!flgAILastMoveSuccess)
+									AIMoveFromTo(row, column, row+r, column+r);
+								if (!flgAILastMoveSuccess)	
+									AIMoveFromTo(row, column, row+r, column-r);
+							}
+							for (var r=(8-row); r>2; r--) {
+								if (!flgAILastMoveSuccess)
+									AIMoveFromTo(row, column, row-r, column+r);
+								if (!flgAILastMoveSuccess)	
+									AIMoveFromTo(row, column, row-r, column-r);
+							}
+						}
 					}
 					else if (p.getType() == "pawn") {
 						//console.log("pawn: " + row + "," + column);
 						
-						if (!flgAILastMoveSuccess)	
-							AIMoveFromTo(row, column, row-2, column-2);
 						if (!flgAILastMoveSuccess)
 							AIMoveFromTo(row, column, row-2, column+2);
+						if (!flgAILastMoveSuccess)	
+							AIMoveFromTo(row, column, row-2, column-2);
 					}
 				}
 			}
 		}
 	}
+	}
 	});
 
 	Array.from(myBoard.children).forEach(function(c) { 
-
+	if (!flgAILastMoveSuccess) {
 	var brd = checkers.getBoard();
 	if (brd) {
 		var row = getCellRC(c, "Row");
@@ -1035,32 +1050,51 @@ if (checkers.getCurrentPlayer()) {
 					if (p.getType() == "pawn") {
 						//console.log("pawn: " + row + "," + column);
 						
-						if (!flgAILastMoveSuccess)	
-							AIMoveFromTo(row, column, row-1, column-1);
 						if (!flgAILastMoveSuccess)
 							AIMoveFromTo(row, column, row-1, column+1);
+						if (!flgAILastMoveSuccess)	
+							AIMoveFromTo(row, column, row-1, column-1);
 
 					}
-					else if (p.getType() == "king") {
+				}
+			}
+		}
+	}
+	}
+	});
+
+
+	Array.from(myBoard.children).forEach(function(c) { 
+	if (!flgAILastMoveSuccess) {
+	var brd = checkers.getBoard();
+	if (brd) {
+		var row = getCellRC(c, "Row");
+		var column = getCellRC(c, "Column");
+		if (brd[row]) {
+			var p = brd[row][column];
+			if (p) {
+				if (p.getPlayer().getName() == plyr2.getName()) {
+					if (p.getType() == "king") {
 						//console.log("king: " + row + "," + column);
 
-						if (!flgAILastMoveSuccess)	
-							AIMoveFromTo(row, column, row+1, column-1);
 						if (!flgAILastMoveSuccess)
 							AIMoveFromTo(row, column, row+1, column+1);
-
 						if (!flgAILastMoveSuccess)	
-							AIMoveFromTo(row, column, row-1, column-1);
+							AIMoveFromTo(row, column, row+1, column-1);
+
 						if (!flgAILastMoveSuccess)
 							AIMoveFromTo(row, column, row-1, column+1);
+						if (!flgAILastMoveSuccess)	
+							AIMoveFromTo(row, column, row-1, column-1);
 					}
 
 				}
 			}
 		}
 	}
-
+	}
 	});
+
 	}
 else {
 	PlaySoundWav("error");
